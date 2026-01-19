@@ -13,9 +13,11 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 @Mapper(componentModel = SPRING)
 public interface BookMapper {
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "author", source = "author")
     Book mapToBookFromCreateDto(CreateBookDto createBookDto, Author author);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "author", source = "author")
     Book mapToBookFromBookDto(BookDto bookDto, Author author);
 

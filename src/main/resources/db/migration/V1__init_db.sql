@@ -1,0 +1,12 @@
+CREATE TABLE author (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE book (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    title VARCHAR(255) NOT NULL,
+    publication_year INT,
+    author_id BIGINT,
+    CONSTRAINT fk_author FOREIGN KEY (author_id) REFERENCES author(id)
+);

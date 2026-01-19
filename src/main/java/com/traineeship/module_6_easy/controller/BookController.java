@@ -1,11 +1,15 @@
 package com.traineeship.module_6_easy.controller;
 
-import com.traineeship.module_6_easy.advice.BookNotFoundException;
+import com.traineeship.module_6_easy.exceptions.BookNotFoundException;
+import com.traineeship.module_6_easy.model.dto.CreateBookDto;
 import com.traineeship.module_6_easy.model.entity.Book;
 import com.traineeship.module_6_easy.model.dto.BookDto;
 import com.traineeship.module_6_easy.service.BookService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +24,8 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping
-    public ResponseEntity<List<Book>> getBooks() {
-        List<Book> books = bookService.getBooks();
-        return ResponseEntity.ok(books);
+    public ResponseEntity<Page<Book>> getBooks(Pageable pageable) {
+        return ResponseEntity.ok(bookService.getBooks(pageable));
     }
 
     @GetMapping("/{id}")
@@ -45,8 +48,8 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<Book> createBook(@RequestBody BookDto bookDto) {
-        Book book = bookService.createBook(bookDto);
+    public ResponseEntity<Book> createBook(@RequestBody @Valid CreateBookDto createBookDto) {
+        Book book = bookService.createBook(createBookDto);
         log.info("Получили объект: {} - {}", book.getId(), book.getTitle());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(book);

@@ -1,4 +1,4 @@
-package com.traineeship.module_6_easy.advice;
+package com.traineeship.module_6_easy.exceptions;
 
 public class BookNotFoundException extends RuntimeException {
     public BookNotFoundException(Long id) {

@@ -1,7 +1,9 @@
 package com.traineeship.module_6_easy.service;
 
 
-import com.traineeship.module_6_easy.advice.BookNotFoundException;
+import com.traineeship.module_6_easy.exceptions.BookNotFoundException;
+import com.traineeship.module_6_easy.mapper.BookMapper;
+import com.traineeship.module_6_easy.model.dto.CreateBookDto;
 import com.traineeship.module_6_easy.model.entity.Author;
 import com.traineeship.module_6_easy.model.entity.Book;
 import com.traineeship.module_6_easy.model.dto.BookDto;
@@ -9,6 +11,8 @@ import com.traineeship.module_6_easy.repository.AuthorRepository;
 import com.traineeship.module_6_easy.repository.BookRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,8 +27,11 @@ public class BookService {
     @Autowired
     private AuthorRepository authorRepository;
 
-    public List<Book> getBooks() {
-        return bookRepository.findAll();
+    @Autowired
+    private BookMapper bookMapper;
+
+    public Page<Book> getBooks(Pageable pageable) {
+        return bookRepository.findAll(pageable);
     }
 
     public Book getBookById(Long id) {
@@ -56,21 +63,20 @@ public class BookService {
         return bookRepository.findByTitleAndAuthor(title, author);
     }
 
-
-    public Book createBook(BookDto bookDto) {
-        Author author = getOrCreateAuthor(bookDto.getAuthor());
-
-        Book book = new Book();
-        book.setTitle(bookDto.getTitle());
-        book.setAuthor(author);
+// **
+    public Book createBook(CreateBookDto createBookDto) {
+        Author author = getOrCreateAuthor(createBookDto.getAuthor());
+        Book book = bookMapper.mapToBookFromCreateDto(createBookDto, author);
 
         return bookRepository.save(book);
     }
 
+    // **
     public Book updateBook(Long id, BookDto bookDto) {
         Book book = getBookById(id);
-        book.setTitle(bookDto.getTitle());
-        book.setAuthor(getOrCreateAuthor(bookDto.getAuthor()));
+        Author author = getOrCreateAuthor(bookDto.getAuthor());
+        bookMapper.updateBookFromBookDto(bookDto, author, book);
+
         return bookRepository.save(book);
     }
 
@@ -78,15 +84,14 @@ public class BookService {
         return bookRepository.findByTitleContainingIgnoreCaseOrderByPublicationYearDesc(searchText);
     }
 
+    // **
     @Transactional
     public Book createBookWithAuthor(BookDto bookDto, boolean throwError) {
         Author author = new Author();
         author.setName(bookDto.getAuthor());
         authorRepository.save(author);
 
-        Book book = new Book();
-        book.setTitle(bookDto.getTitle());
-        book.setAuthor(author);
+        Book book = bookMapper.mapToBookFromBookDto(bookDto, author);
 
         if (throwError) {
             throw new RuntimeException("Ошибка после сохранения автора!");
